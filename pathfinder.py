@@ -17,7 +17,8 @@ class pathfinder(object):
         self.consider_args()
         self.get_data()
         self.get_locations()
-        self.process(self.origin, 0)
+        self.data[self.origin[0]][self.origin[1]].distance_origin = 0
+        self.process_handler()
     
     def consider_args(self):
 
@@ -47,26 +48,32 @@ class pathfinder(object):
         if(not(self.destination)):
             self.destination = [int(i) for i in input("Destination >> ").split()]
 
-    def process(self, current_location, current_distance):
-        
-        if(self.end_processing):
-            return
-        change = self.data[current_location[0]][current_location[1]].assign_distance(current_distance)
-        if(not(change)):
-            return
-        if(current_location == self.destination):
-            self.end_processing = True
-            return
-        neighbourhood = self.neighbour_points(current_location)
-        for i in neighbourhood:
-            self.process(i.location, current_distance + 1)
+    def process_handler(self):
+
+        process_queue = self.neighbour_points(self.origin)
+        distance = 1
+        new_process_queue = []
+        while(not(self.end_processing)):
+            self.process(distance, process_queue)
+            distance += 1
+            for i in process_queue:
+                new_process_queue.append(self.neighbour_points(i.location))
+            process_queue = new_process_queue
+
+    def process(self, distance, process_queue):
+
+        for i in process_queue:
+            i.assign_distance(distance)
+            if(i.location == self.destination):
+                self.end_processing = True
+                return
     
     def neighbour_points(self, location):
         
         neighbour_list = []
         for i in [location[0] - 1, location[0], location[0] + 1]:
             for j in [location[1] - 1, location[1], location[1] + 1]:
-                if(i < self.box_size and j < self.box_size and i >= 0 and j >= 0):
+                if(i < self.box_size and j < self.box_size and i >= 0 and j >= 0 and self.data[i][j].passable):
                     neighbour_list.append(self.data[i][j])
                 else:
                     pass
@@ -84,9 +91,7 @@ class point(object):
     
     def assign_distance(self, distance):
 
-        if(self.passable and self.distance_origin == None):
+        if(self.distance_origin == None):
             self.distance_origin = distance
-            return True
-        return False
 
 pathfinder()
