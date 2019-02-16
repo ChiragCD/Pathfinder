@@ -1,6 +1,6 @@
 import random
 
-boxsize = 400
+boxsize = 400       ## Map size
 data = ''
 
 for i in range(boxsize):
