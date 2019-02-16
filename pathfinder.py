@@ -1,5 +1,12 @@
 import sys
 
+def unique_merge(l1, l2):
+
+    for i in l2:
+        if i not in l1:
+            l1.append(i)
+    return l1
+
 class pathfinder(object):
 
     def __init__(self):
@@ -19,6 +26,10 @@ class pathfinder(object):
         self.get_locations()
         self.data[self.origin[0]][self.origin[1]].distance_origin = 0
         self.process_handler()
+        if(self.end_processing):
+            print("Possible")
+        else:
+            print("Not possible")
     
     def consider_args(self):
 
@@ -50,15 +61,19 @@ class pathfinder(object):
 
     def process_handler(self):
 
-        process_queue = self.neighbour_points(self.origin)
+        process_queue = self.important_neighbour_points(self.origin)
         distance = 1
         new_process_queue = []
         while(not(self.end_processing)):
             self.process(distance, process_queue)
             distance += 1
             for i in process_queue:
-                new_process_queue.append(self.neighbour_points(i.location))
-            process_queue = new_process_queue
+                new_process_queue = unique_merge(new_process_queue, self.important_neighbour_points(i.location))
+            process_queue = new_process_queue + []
+            new_process_queue = []
+            if(not(process_queue)):
+                break
+        print("Distance - ", distance)
 
     def process(self, distance, process_queue):
 
@@ -68,16 +83,13 @@ class pathfinder(object):
                 self.end_processing = True
                 return
     
-    def neighbour_points(self, location):
+    def important_neighbour_points(self, location):
         
         neighbour_list = []
         for i in [location[0] - 1, location[0], location[0] + 1]:
             for j in [location[1] - 1, location[1], location[1] + 1]:
-                if(i < self.box_size and j < self.box_size and i >= 0 and j >= 0 and self.data[i][j].passable):
+                if(i < self.box_size and j < self.box_size and i >= 0 and j >= 0 and self.data[i][j].distance_origin == None and self.data[i][j].passable):
                     neighbour_list.append(self.data[i][j])
-                else:
-                    pass
-        neighbour_list.remove(self.data[location[0]][location[1]])
         return neighbour_list
 
 class point(object):
