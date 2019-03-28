@@ -35,6 +35,7 @@ class pathfinder(object):
             print("Possible", self.shortest_distance)
         else:
             print("Not possible", self.shortest_distance)
+        self.set_path()
     
     def consider_args(self):
 
@@ -86,6 +87,7 @@ class pathfinder(object):
             self.shortest_distance = distance
             self.end_processing = True
             self.considered_points.append(tuple(self.destination))
+            self.distance[self.destination[0]][self.destination[1]] = distance
             return
         for location in process_queue:
             self.distance[location[0]][location[1]] = distance
@@ -101,4 +103,25 @@ class pathfinder(object):
                         neighbour_list.append([i, j])
         return neighbour_list
 
+    def set_path(self):
+        
+        location = self.destination
+        while(location != self.origin):
+            self.path.append((location[0], location[1]))
+            for i in self.vicinity(location):
+                if(self.distance[i[0]][i[1]] == self.distance[location[0]][location[1]] - 1):
+                    location = i
+                    break
+        pg.show_path(self.data, self.considered_points, self.path)
+
+    def vicinity(self, location):
+
+        vicinity_list = []
+        for i in [location[0] - 1, location[0], location[0] + 1]:
+            for j in [location[1] - 1, location[1], location[1] + 1]:
+                if(i < self.box_size and j < self.box_size and i >= 0 and j >= 0 and self.data[i][j]):
+                    if(self.distance[i][j] > -1):
+                        vicinity_list.append([i, j])
+        return vicinity_list
+    
 pathfinder()
