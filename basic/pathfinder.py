@@ -1,4 +1,4 @@
-import sys, pickle
+import sys, pickle, pygame
 
 def unique_merge(l1, l2):
 
@@ -54,6 +54,7 @@ class pathfinder(object):
         for i in range(len(data)):
             for j in range(len(data[i].split())):
                 self.data[i][j] = point([i, j], data[i][j])
+        pygame.show_map(data)
 
     def get_locations(self):
 

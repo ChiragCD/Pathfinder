@@ -1,6 +1,6 @@
 import random, pickle
 
-boxsize = 10
+boxsize = 100
 data = [[0 for i in range(boxsize)] for j in range(boxsize)]
 
 for i in range(boxsize):
