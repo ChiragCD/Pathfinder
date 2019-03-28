@@ -1,4 +1,4 @@
-import sys, pickle, pygame
+import sys, pickle, pg
 
 def unique_merge(l1, l2):
 
@@ -19,6 +19,8 @@ class pathfinder(object):
         self.data = []
         self.origin = []
         self.destination = []
+        self.distance = []
+        self.considered_points = []
         self.path = []
         self.__main__()
 
@@ -27,7 +29,7 @@ class pathfinder(object):
         self.consider_args()
         self.get_data()
         self.get_locations()
-        self.data[self.origin[0]][self.origin[1]].distance_origin = 0
+        self.distance[self.origin[0]][self.origin[1]] = 0
         self.process_handler()
         if(self.end_processing):
             print("Possible", self.shortest_distance)
@@ -50,11 +52,9 @@ class pathfinder(object):
         data = pickle.load(file)
         file.close()
         self.box_size = len(data)
-        self.data = [[None for i in range(self.box_size)] for j in range(self.box_size)]           ## Assumes square map
-        for i in range(len(data)):
-            for j in range(len(data[i].split())):
-                self.data[i][j] = point([i, j], data[i][j])
-        pygame.show_map(data)
+        self.data = data
+        self.distance = [[-1 for i in range(self.box_size)] for j in range(self.box_size)]           ## Assumes square map
+        pg.show_map(data, [])
 
     def get_locations(self):
 
@@ -65,63 +65,40 @@ class pathfinder(object):
 
     def process_handler(self):
 
-        process_queue_origin = self.important_neighbour_points(self.origin, 0)
-        process_queue_destination = self.important_neighbour_points(self.destination, 1)
+        process_queue = self.important_neighbour_points(self.origin)
         distance = 0
-        new_process_queue_origin = []
-        new_process_queue_destination = []
+        new_process_queue = []
         while(not(self.end_processing)):
             distance += 1
-            self.process(distance, process_queue_origin, 0)
-            self.process(distance, process_queue_destination, 1)
-            for i in process_queue_origin:
-                new_process_queue_origin = unique_merge(new_process_queue_origin, self.important_neighbour_points(i.location, 0))
-            for i in process_queue_destination:
-                new_process_queue_destination = unique_merge(new_process_queue_destination, self.important_neighbour_points(i.location, 1))
-            process_queue_origin = new_process_queue_origin + []
-            process_queue_destination = new_process_queue_destination + []
-            new_process_queue_origin = []
-            new_process_queue_destination = []
-            if(not(process_queue_origin) or not(process_queue_destination)):
+            self.process(distance, process_queue)
+            for i in process_queue:
+                new_process_queue = unique_merge(new_process_queue, self.important_neighbour_points(i))
+            process_queue = new_process_queue + []
+            new_process_queue = []
+            if(not(process_queue)):
                 break
+            pg.show_map(self.data, self.considered_points)
         print("Distance - ", distance)
 
-    def process(self, distance, process_queue, reference):
+    def process(self, distance, process_queue):
 
-        for i in process_queue:
-            i.assign_distance(distance, reference)
-            if(i.distance_origin and i.distance_destination):
-                self.end_processing = True
-                self.midpoint = i
-                self.shortest_distance = i.distance_origin + i.distance_destination
-                return
+        if(self.destination in process_queue):
+            self.shortest_distance = distance
+            self.end_processing = True
+            self.considered_points.append(tuple(self.destination))
+            return
+        for location in process_queue:
+            self.distance[location[0]][location[1]] = distance
+            self.considered_points.append((location[0], location[1]))
     
-    def important_neighbour_points(self, location, reference):
+    def important_neighbour_points(self, location):
         
         neighbour_list = []
         for i in [location[0] - 1, location[0], location[0] + 1]:
             for j in [location[1] - 1, location[1], location[1] + 1]:
-                if(i < self.box_size and j < self.box_size and i >= 0 and j >= 0 and self.data[i][j].passable):
-                    if(self.data[i][j].distance_origin == None and self.data[i][j].distance_destination == None):
-                        neighbour_list.append(self.data[i][j])
-                    elif((reference == 0 and self.data[i][j].distance_destination) or (reference == 1 and self.data[i][j].distance_origin)):
-                        neighbour_list.append(self.data[i][j])
+                if(i < self.box_size and j < self.box_size and i >= 0 and j >= 0 and self.data[i][j]):
+                    if(self.distance[i][j] == -1):
+                        neighbour_list.append([i, j])
         return neighbour_list
-
-class point(object):
-
-    def __init__(self, location, passable):
-
-        self. location = location
-        self.passable = passable
-        self.distance_origin = None
-        self.distance_destination = None
-    
-    def assign_distance(self, distance, reference):
-
-        if(reference == 0 and self.distance_origin == None):
-            self.distance_origin = distance
-        if(reference == 1 and self.distance_destination == None):
-            self.distance_destination = distance
 
 pathfinder()
