@@ -8,6 +8,7 @@ for i in range(boxsize):
         data[i][j] = random.randint(0, 1)
 
 def display_map():
+    
     for i in range(boxsize):
         for j in range(boxsize):
             print(data[i][j], end = ' ')
