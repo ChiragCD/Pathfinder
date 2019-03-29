@@ -1,4 +1,5 @@
 import sys, pickle, pg
+from zeros import zero
 
 def unique_merge(l1, l2):
 
@@ -15,6 +16,7 @@ class pathfinder(object):
         self.midpoint = None
         self.box_size = 0
         self.shortest_distance = -1
+        self.dimension = 2                                  ## Change Here
         self.data_source = "pathfinderdata.bin"
         self.data = []
         self.origin = []
@@ -29,7 +31,7 @@ class pathfinder(object):
         self.consider_args()
         self.get_data()
         self.get_locations()
-        self.distance[self.origin[0]][self.origin[1]] = 0
+        self.set_distance(self.origin, 0)
         self.process_handler()
         if(self.end_processing):
             print("Possible", self.shortest_distance)
@@ -50,12 +52,10 @@ class pathfinder(object):
     def get_data(self):
 
         file = open(self.data_source, 'rb')
-        data = pickle.load(file)
+        self.data = pickle.load(file)
         file.close()
-        self.box_size = len(data)
-        self.data = data
-        self.distance = [[-1 for i in range(self.box_size)] for j in range(self.box_size)]           ## Assumes square map
-        pg.show_map(data, [])
+        self.box_size = len(self.data)
+        self.distance = zero(self.dimension, self.boxsize)           ## Assumes square map
 
     def get_locations(self):
 
@@ -63,6 +63,15 @@ class pathfinder(object):
             self.origin = [int(i) for i in input("Origin >> ").split()]
         if(not(self.destination)):
             self.destination = [int(i) for i in input("Destination >> ").split()]
+
+    def set_distance(self, location, distance):
+
+        current_dimension = 0
+        element = self.distance[location[currentdimension]]
+        while(current_dimension < self.dimension):
+            element = element[location[currentdimension]]
+            current_dimension += 1
+        
 
     def process_handler(self):
 
